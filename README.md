@@ -1,3 +1,6 @@
+> [!NOTE]
+> This fork adds a [Flox](https://flox.dev) environment. Run `flox activate`, then see [FLOX.md](FLOX.md).
+
 # gosocialcheck: social reputation checker for Go modules
 
 gosocialcheck checks whether a Go module is already adopted by a trustworthy project.

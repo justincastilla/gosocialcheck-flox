@@ -1,0 +1,61 @@
+schema-version = "1.17.0"
+
+# Flox environment for https://github.com/AkihiroSuda/gosocialcheck.
+
+[install]
+# `go.mod` requires go 1.26.0. Upstream CI pins `GOTOOLCHAIN=local`, so the
+# environment provides the toolchain instead of letting `go` download one.
+go.pkg-path = "go_1_26"
+# gosocialcheck shells out to `git` to clone its remote cache and, with
+# `--gha`, to diff `go.sum` against the PR base branch.
+git.pkg-path = "git"
+# Supplies `GITHUB_TOKEN` (see the hook) to stay under the GitHub API rate limit.
+gh.pkg-path = "gh"
+gopls.pkg-path = "gopls"
+# Upstream's lint workflow.
+zizmor.pkg-path = "zizmor"
+
+[vars]
+GOTOOLCHAIN = "local"
+
+[hook]
+on-activate = '''
+  export GOPATH="$FLOX_ENV_CACHE/go"
+  export GOBIN="$GOPATH/bin"
+  mkdir -p "$GOBIN"
+
+  if [ -z "${GITHUB_TOKEN:-}" ] && [ -z "${GH_TOKEN:-}" ]; then
+    if token="$(gh auth token 2>/dev/null)"; then
+      export GITHUB_TOKEN="$token"
+    else
+      echo "gosocialcheck: no GITHUB_TOKEN set and gh is not logged in;" >&2
+      echo "  'gosocialcheck update' may hit the GitHub API rate limit." >&2
+      echo "  Run 'gh auth login' or export GITHUB_TOKEN." >&2
+    fi
+  fi
+'''
+
+[profile]
+common = '''
+  export PATH="$GOBIN:$PATH"
+'''
+
+[build.gosocialcheck]
+description = "Social reputation checker for Go modules"
+license = ["Apache-2.0"]
+version.command = "git describe --tags --always --dirty"
+runtime-packages = ["git"]
+command = '''
+  mkdir -p "$out/bin"
+  go build -trimpath \
+    -ldflags "-s -w -X github.com/AkihiroSuda/gosocialcheck/cmd/gosocialcheck/version.Version=$(git describe --tags --always --dirty)" \
+    -o "$out/bin/gosocialcheck" ./cmd/gosocialcheck
+'''
+
+[options]
+systems = [
+  "aarch64-darwin",
+  "aarch64-linux",
+  "x86_64-darwin",
+  "x86_64-linux",
+]
