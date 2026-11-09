@@ -9,6 +9,9 @@ go.pkg-path = "go_1_26"
 # gosocialcheck shells out to `git` to clone its remote cache and, with
 # `--gha`, to diff `go.sum` against the PR base branch.
 git.pkg-path = "git"
+# nixpkgs patches Go's `net` package to read `/etc/protocols` and
+# `/etc/services` from `iana-etc`, so every built binary references it.
+iana-etc.pkg-path = "iana-etc"
 # Supplies `GITHUB_TOKEN` (see the hook) to stay under the GitHub API rate limit.
 gh.pkg-path = "gh"
 gopls.pkg-path = "gopls"
@@ -44,7 +47,7 @@ common = '''
 description = "Social reputation checker for Go modules"
 license = ["Apache-2.0"]
 version.command = "git describe --tags --always --dirty"
-runtime-packages = ["git"]
+runtime-packages = ["git", "iana-etc"]
 command = '''
   mkdir -p "$out/bin"
   go build -trimpath \

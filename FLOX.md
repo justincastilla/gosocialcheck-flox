@@ -25,6 +25,7 @@ To build a package instead, run `flox build`. The binary lands in
 |---|---|---|
 | `go install ...@latest` | `go.mod` says `go 1.26.0`; an older `go` silently downloads a newer toolchain | `go_1_26`, `GOTOOLCHAIN=local` (as upstream CI does) |
 | Not mentioned | `git` is called at runtime to clone the remote cache and diff `go.sum` for `--gha` | `git`, also a `runtime-packages` entry of the build |
+| Not mentioned | Go from nixpkgs references `iana-etc` for `/etc/protocols` and `/etc/services`, so `flox build` rejects the binary unless the package is in the environment | `iana-etc`, also a `runtime-packages` entry of the build |
 | "export `GITHUB_TOKEN`=..." | An undocumented env var, without which `update` hits the rate limit | Hook reads `gh auth token`, warns if neither is set |
 | `zizmor-action` in CI | Linter only available in CI | `zizmor` |
 | `go install` to `~/go/bin` | Global `GOPATH`, binaries shared across projects | `GOPATH` and `GOBIN` under `$FLOX_ENV_CACHE` |
